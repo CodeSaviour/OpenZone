@@ -1,97 +1,88 @@
-# OpenZoneFill Module README
+# OpenZoneFill
 
-## Overview
+OpenZoneFill is a Roblox module designed to dynamically generate a 3D grid of parts within a specified zone. This module can be used for various purposes such as creating mining areas, building grids, or any other spatial partitioning tasks in your Roblox game.
 
-The `OpenZone` module is a Lua module for Roblox that facilitates the creation and generation of 3D grid zones. This module allows for the dynamic generation of 3D grids of parts within a defined zone in the Roblox game environment.
+## Table of Contents
+
+- [Installation](#installation)
+- [Usage](#usage)
+- [API Reference](#api-reference)
+  - [OpenZone.new](#openzonenew)
+  - [OpenZone:Generate](#openzonegenerate)
+- [Contributing](#contributing)
+- [License](#license)
 
 ## Installation
 
-To use the `OpenZone` module, you need to include it in your Roblox game scripts. Place the `OpenZoneFill` script in an appropriate directory within your game.
+To use the OpenZoneFill module in your Roblox project, follow these steps:
+
+1. Clone or download this repository.
+2. Place the `OpenZoneFill` module script into your Roblox game's `ServerScriptService` or any other appropriate service.
 
 ## Usage
 
-Here’s how you can use the `OpenZone` module in your scripts:
-
-### Creating a New Zone
-
-To create a new mining zone, call the `OpenZone.new` function with the desired zone (a `BasePart` instance) and an optional `gensize` parameter, which determines the size of the generated parts.
+Here is a basic example of how to use the OpenZoneFill module:
 
 ```lua
-local RunService = game:GetService('RunService')
-local OpenZone = require(path.to.OpenZone)
+local OpenZoneFill = require(game.ServerScriptService.OpenZoneFill)
 
-local zonePart = workspace:WaitForChild('ZonePart') -- Replace 'ZonePart' with your zone part name
-local gensize = 2 -- Optional, default is 1
+local zonePart = workspace:WaitForChild("ZonePart") -- Replace with your zone BasePart
+local zone = OpenZoneFill.new(zonePart, 2) -- Second parameter is the generation size (optional)
 
-local miningZone = OpenZoneFill.new(zonePart, gensize)
+zone:Generate()
 ```
 
-### Generating the Zone
-
-Once you have created a mining zone, you can generate it by calling the `Generate` method on the zone instance.
-
-```lua
-if miningZone then
-    miningZone:Generate()
-end
-```
-
-## API
+## API Reference
 
 ### `OpenZone.new(zone: BasePart, gensize: number) -> Zone`
 
-Creates a new mining zone.
+Creates a new `Zone` object.
 
-- `zone`: A `BasePart` instance representing the zone where parts will be generated.
-- `gensize`: (Optional) A number specifying the size of each generated part. Default is 1.
+#### Parameters:
 
-Returns a `Zone` instance.
+- `zone` (BasePart): The BasePart that defines the zone.
+- `gensize` (number, optional): The size of each generated part in the grid. Default is 1.
 
-### `Zone:Generate()`
+#### Returns:
 
-Generates parts within the zone. The parts are positioned and sized based on the zone's dimensions and the `gensize` parameter.
+- `Zone`: A new Zone object.
 
-## Example
+#### Example:
 
 ```lua
-local RunService = game:GetService('RunService')
-local OpenZone = require(path.to.OpenZone)
+local zonePart = workspace:WaitForChild("ZonePart")
+local zone = OpenZoneFill.new(zonePart, 2)
+```
 
-local zonePart = workspace:WaitForChild('ZonePart') -- Your zone part
-local gensize = 2 -- Size of the generated parts
+### `OpenZone:Generate() -> table`
 
-local miningZone = OpenZone.new(zonePart, gensize)
+Generates the 3D grid of parts within the zone.
 
-if miningZone then
-    miningZone:Generate()
+#### Returns:
+
+- `table`: A nested table structure containing the generated parts.
+- `false`: If the generation fails.
+
+#### Example:
+
+```lua
+local zone = OpenZoneFill.new(zonePart, 2)
+local objects = zone:Generate()
+if objects then
+    print("Zone generated successfully!")
+else
+    print("Zone generation failed.")
 end
 ```
 
-## Types
-
-### `Zone`
-
-A type representing a mining zone.
-
-- `_x`: Number, the X position of the zone.
-- `_y`: Number, the Y position of the zone.
-- `_z`: Number, the Z position of the zone.
-- `set`: Boolean, indicates whether the zone is set.
-- `level`: Number, the level of the zone.
-- `Objects`: Table, holds objects within the zone.
-- `_sizeX`: Number, the X size of the zone.
-- `_sizeY`: Number, the Y size of the zone.
-- `_sizeZ`: Number, the Z size of the zone.
-- `gen_size`: Number, the size of generated parts.
-
 ## Contributing
 
-If you have suggestions or improvements, feel free to submit a pull request or open an issue on GitHub.
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-This module is open-sourced under the MIT license. See the `LICENSE` file for details.
+This project is licensed under the MIT License.
 
 ---
 
-This README provides an overview of the `OpenZone` module usage, installation, and API. Adjust the paths and part names according to your game's structure and requirements.
+For more detailed information, visit the [Wiki](#) or contact the repository owner.
