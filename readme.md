@@ -2,7 +2,7 @@
 
 ## Overview
 
-The `OpenZone` module is a Lua module for Roblox that facilitates the creation and generation of mining zones. This module allows for the dynamic generation of 3D grids of parts within a defined zone in the Roblox game environment.
+The `OpenZone` module is a Lua module for Roblox that facilitates the creation and generation of 3D grid zones. This module allows for the dynamic generation of 3D grids of parts within a defined zone in the Roblox game environment.
 
 ## Installation
 
