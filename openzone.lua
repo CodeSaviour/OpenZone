@@ -1,6 +1,3 @@
--- // TODO: ADD SUPPORT FOR FILLING WITH DIFFERENT PARTS
--- // TODO: ADD SUPPORT FOR FILLING RANDOMLY AND EVENLY
-
 local HttpService = game:GetService('HttpService')
 local RunService = game:GetService('RunService')
 
@@ -74,8 +71,10 @@ function OpenZone:GetTopLayer()
 	return maxX, maxY, maxZ
 end
 
-function OpenZone:Plant(object: Model | BasePart, random: boolean, amount: number, offset)
+function OpenZone:Plant(object: Model | BasePart, amount: number, offset)
 	local x,y,z = self:GetTopLayer()
+	if not offset then offset = 0 end
+	
 	for count = 1,amount do
 		local _obj = self.Objects["X"..math.random(0,x)]["Y"..y]["Z"..math.random(0,z)]
 		if not _obj:FindFirstChild('Planted') then
@@ -88,11 +87,14 @@ function OpenZone:Plant(object: Model | BasePart, random: boolean, amount: numbe
 			planted.Value = object
 			planted.Parent = _obj
 			planted.Name = "Planted"
-			object:PivotTo(_obj.CFrame + Vector3.new(1,(size.Y/2)+(_obj.Size.Y/2), 1))
+			object:PivotTo(_obj.CFrame + Vector3.new(1,(size.Y/2)+(_obj.Size.Y/2), 1) + Vector3.new(0,0 ,-offset, offset))
 		end	
 	end
 end
 
+function OpenZone:OnPlayerEnter(player)
+	
+end
 
 function OpenZone:RemoveFilling()
 	local function action(obj)
@@ -109,7 +111,7 @@ function OpenZone:RemoveFilling()
 	self.Objects = {};
 end
 
-function OpenZone:Generate(size: number)
+function OpenZone:Generate(size: number, Part: BasePart)
 	local Zone: Zone = self
 	if Zone then
 		Zone.gen_size = size
@@ -124,7 +126,14 @@ function OpenZone:Generate(size: number)
 				for y = 0, highesty - 1 do
 					Zone.Objects["X"..x]["Y"..y] = {}
 					for z = 0, highestz - 1 do
-						local part = Instance.new('Part')
+						local part
+						
+						if Part then 
+							part = Part:Clone()
+						else
+							part = Instance.new('Part')
+						end
+						
 						part.Size = Vector3.new(Zone.gen_size, Zone.gen_size, Zone.gen_size)
 						part.Position = Vector3.new(
 							Zone._x - (Zone._sizeX / 2) + (x * Zone.gen_size) + (Zone.gen_size / 2),
