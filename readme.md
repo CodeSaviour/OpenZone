@@ -1,234 +1,109 @@
-# OpenZoneFill Documentation
+# OpenZoneFill
 
-## Overview
+OpenZoneFill is a Roblox module that allows you to manage and manipulate zones in your game. With this module, you can create, generate, and manage objects within a defined zone, making it easier to handle complex spatial data.
 
-OpenZoneFill is a module that allows you to manage and manipulate zones in Roblox. It enables you to create, generate, and manage objects within a defined zone, making it easier to handle complex spatial data within your game.
+## Table of Contents
 
-## Services Used
+- [Installation](#installation)
+- [Usage](#usage)
+  - [Creating a New Zone](#creating-a-new-zone)
+  - [Generating the Zone](#generating-the-zone)
+  - [Planting Objects in the Zone](#planting-objects-in-the-zone)
+  - [Removing All Objects from the Zone](#removing-all-objects-from-the-zone)
+  - [Getting the Top Layer Coordinates](#getting-the-top-layer-coordinates)
+- [API Reference](#api-reference)
+  - [OpenZone.new](#openzonenew)
+  - [OpenZone:GetTopLayer](#openzonegettoplayer)
+  - [OpenZone:Plant](#openzoneplant)
+  - [OpenZone:RemoveFilling](#openzoneremovefilling)
+  - [OpenZone:Generate](#openzonegenerate)
+- [License](#license)
+
+## Installation
+
+To use the OpenZoneFill module in your Roblox game, you can insert it as a ModuleScript in your game or require it from a GitHub repository.
+
+## Usage
+
+### Creating a New Zone
 
 ```lua
-local HttpService = game:GetService('HttpService')
-local RunService = game:GetService('RunService')
+local OpenZone = require(path_to_OpenZone_module)
+
+local someBasePart = -- your BasePart here
+local myZone = OpenZone.new(someBasePart)
 ```
 
-## OpenZone Module
-
-### Zone Type Definition
+### Generating the Zone
 
 ```lua
-export type Zone = {
-    _x: number;
-    _y: number;
-    _z: number;
-    set: boolean;
-    level: number;
-    Objects: {};
-    _sizeX: number;
-    _sizeY: number;
-    _sizeZ: number;
-    gen_size: number;
-}
+myZone:Generate(10, nil) -- Generates a grid with part size of 10
 ```
+
+### Planting Objects in the Zone
+
+```lua
+local someModel = -- your Model or BasePart here
+myZone:Plant(someModel, 5, 2) -- Plants 5 instances of `someModel` with an offset of 2
+```
+
+### Removing All Objects from the Zone
+
+```lua
+myZone:RemoveFilling()
+```
+
+### Getting the Top Layer Coordinates
+
+```lua
+local maxX, maxY, maxZ = myZone:GetTopLayer()
+```
+
+## API Reference
 
 ### OpenZone.new
 
 Creates a new zone.
 
-```lua
-function OpenZone.new(zone: BasePart)
-    assert(zone, "No zone specified")
+#### Parameters
 
-    local BillboardsFolder = Instance.new('Folder')
-    BillboardsFolder.Name = "OpenZoneID:_"..HttpService:GenerateGUID(false)
-    BillboardsFolder.Parent = workspace
+- `zone` (BasePart): The base part defining the zone.
 
-    local Plants = Instance.new('Folder')
-    Plants.Name = "Planted"
-    Plants.Parent = BillboardsFolder
+#### Returns
 
-    if zone then
-        local _zone: Zone = setmetatable({
-            _x = zone.Position.X;
-            _y = zone.Position.Y;
-            _z = zone.Position.Z;
-            set = false;
-            level = 0;
-            Objects = {};
-            _sizeX = zone.Size.X;
-            _sizeY = zone.Size.Y;
-            _sizeZ = zone.Size.Z;
-            zonefolder = BillboardsFolder;
-            zoneplants = Plants
-        }, OpenZone)
-
-        return _zone
-    end
-end
-```
+- `Zone`: A new zone object.
 
 ### OpenZone:GetTopLayer
 
 Gets the top layer coordinates of the zone.
 
-```lua
-function OpenZone:GetTopLayer()
-    local maxX, maxY, maxZ = -math.huge, -math.huge, -math.huge
+#### Returns
 
-    local function scan(coords)
-        for index, value in pairs(coords) do
-            local num = tonumber(index:sub(2))
-            if index:sub(1,1) == "X" and num > maxX then
-                maxX = num
-            elseif index:sub(1,1) == "Y" and num > maxY then
-                maxY = num
-            elseif index:sub(1,1) == "Z" and num > maxZ then
-                maxZ = num
-            end
-
-            if typeof(value) == "table" then
-                scan(value)
-            end
-        end
-    end
-
-    scan(self.Objects)
-    return maxX, maxY, maxZ
-end
-```
+- `number, number, number`: The maximum X, Y, and Z coordinates in the zone.
 
 ### OpenZone:Plant
 
 Plants objects within the zone.
 
-```lua
-function OpenZone:Plant(object: Model | BasePart, amount: number, offset)
-    local x,y,z = self:GetTopLayer()
-    if not offset then offset = 0 end
-    
-    for count = 1, amount do
-        local _obj = self.Objects["X"..math.random(0, x)]["Y"..y]["Z"..math.random(0, z)]
-        if not _obj:FindFirstChild('Planted') then
-            local size = object:GetExtentsSize()
-            local planted = Instance.new('ObjectValue')
-            
-            object = object:Clone()
-            object.Parent = self.zoneplants
-            
-            planted.Value = object
-            planted.Parent = _obj
-            planted.Name = "Planted"
-            object:PivotTo(_obj.CFrame + Vector3.new(1, (size.Y/2) + (_obj.Size.Y/2), 1) + Vector3.new(0, 0, -offset, offset))
-        end    
-    end
-end
-```
+#### Parameters
+
+- `object` (Model | BasePart): The object to be planted.
+- `amount` (number): The number of objects to plant.
+- `offset` (number, optional): The offset for the placement of objects.
 
 ### OpenZone:RemoveFilling
 
 Removes all objects from the zone.
 
-```lua
-function OpenZone:RemoveFilling()
-    local function action(obj)
-        for _, Another in pairs(obj) do
-            if typeof(Another) == "table" then
-                action(Another)
-            else
-                Another:Destroy()
-            end
-        end
-    end
-
-    action(self.Objects)
-    self.Objects = {}
-end
-```
-
 ### OpenZone:Generate
 
 Generates the zone with parts.
 
-```lua
-function OpenZone:Generate(size: number, Part: BasePart)
-    local Zone: Zone = self
-    if Zone then
-        Zone.gen_size = size
+#### Parameters
 
-        local highestx = math.floor(Zone._sizeX / Zone.gen_size)
-        local highesty = math.floor(Zone._sizeY / Zone.gen_size)
-        local highestz = math.floor(Zone._sizeZ / Zone.gen_size)
+- `size` (number): The size of each generated part.
+- `Part` (BasePart, optional): The template part to use for generation. If not provided, a new Part will be created.
 
-        local success, fail = pcall(function()
-            for x = 0, highestx - 1 do
-                Zone.Objects["X"..x] = {}
-                for y = 0, highesty - 1 do
-                    Zone.Objects["X"..x]["Y"..y] = {}
-                    for z = 0, highestz - 1 do
-                        local part
-                        
-                        if Part then 
-                            part = Part:Clone()
-                        else
-                            part = Instance.new('Part')
-                        end
-                        
-                        part.Size = Vector3.new(Zone.gen_size, Zone.gen_size, Zone.gen_size)
-                        part.Position = Vector3.new(
-                            Zone._x - (Zone._sizeX / 2) + (x * Zone.gen_size) + (Zone.gen_size / 2),
-                            Zone._y - (Zone._sizeY / 2) + (y * Zone.gen_size) + (Zone.gen_size / 2),
-                            Zone._z - (Zone._sizeZ / 2) + (z * Zone.gen_size) + (Zone.gen_size / 2)
-                        )
-                        part.Name = "X"..x.."Y"..y.."Z"..z
-                        part.Parent = self.zonefolder
-                        part.Anchored = true
-                        Zone.Objects["X"..x]["Y"..y]["Z"..z] = part
-                    end
-                end
-                RunService.Heartbeat:Wait()
-            end
-        end)
+#### Returns
 
-        if success then
-            return Zone.Objects, Vector3.new(highestx, highesty, highestz)
-        elseif fail then
-            return false
-        end
-    end
-end
-```
-
-## Usage
-
-1. **Create a new zone:**
-
-    ```lua
-    local myZone = OpenZone.new(someBasePart)
-    ```
-
-2. **Generate the zone:**
-
-    ```lua
-    myZone:Generate(10, nil) -- Generates a grid with part size of 10
-    ```
-
-3. **Plant objects in the zone:**
-
-    ```lua
-    myZone:Plant(someModel, 5, 2) -- Plants 5 instances of `someModel` with an offset of 2
-    ```
-
-4. **Remove all objects from the zone:**
-
-    ```lua
-    myZone:RemoveFilling()
-    ```
-
-5. **Get the top layer coordinates:**
-
-    ```lua
-    local maxX, maxY, maxZ = myZone:GetTopLayer()
-    ```
-
-## Return
-
-The `OpenZone` module allows for efficient management of spatial data, making it easier to handle complex object placement and manipulation within a Roblox game environment.
+- `table, Vector3`: A table of generated objects and their highest coordinates or `false` on failure.
