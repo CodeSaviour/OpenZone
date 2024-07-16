@@ -162,3 +162,9 @@ newZone:Destroy()
 ## License
 
 This project is licensed under the MIT License. See the `LICENSE` file for details.
+
+
+## EXAMPLE
+
+https://github.com/user-attachments/assets/191ad720-322e-4c93-9e63-7f64deef3533
+
