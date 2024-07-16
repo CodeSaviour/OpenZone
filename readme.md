@@ -164,7 +164,7 @@ newZone:Destroy()
 This project is licensed under the MIT License. See the `LICENSE` file for details.
 
 
-## EXAMPLE
+## Video Example
 Code: 
 ```lua
 local ServerStorage = game:GetService('ServerStorage')
