@@ -165,6 +165,32 @@ This project is licensed under the MIT License. See the `LICENSE` file for detai
 
 
 ## EXAMPLE
+Code: 
+```lua
+local ServerStorage = game:GetService('ServerStorage')
+local OpenZone = require(ServerStorage.OpenZone)
 
-https://github.com/user-attachments/assets/191ad720-322e-4c93-9e63-7f64deef3533
+local Zone: OpenZone.Zone = OpenZone.new(workspace.radius)
+local fakeZone: OpenZone.Zone = OpenZone.new(workspace.fakezone)
+
+Zone.onPlayerEnter:Connect(function(player)
+	fakeZone:Generate({Size = Vector3.new(5,3,5)})
+	fakeZone:Plant(
+		{
+			Model = workspace.Book, 
+			Amount = 100, 
+			Stackable = true, 
+			MinRotationOffset = 0, 
+			MaxRotationOffset = 250
+		}
+	)
+end)
+
+Zone.onPlayerLeave:Connect(function(player)
+	fakeZone:RemoveFilling()
+	fakeZone:RemovePlants()
+end)
+```
+
+https://github.com/user-attachments/assets/715b7a12-216e-43cb-a236-8ee8d228d1f9
 
