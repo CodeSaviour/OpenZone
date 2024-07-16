@@ -15,6 +15,9 @@ export type Zone = {
 	_sizeY: number;
 	_sizeZ: number;
 	gen_size: Vector3;
+	onPlayerEnter: RBXScriptSignal;
+	onPlayerLeave: RBXScriptSignal;
+	PlayersInside: {};
 }
 
 function OpenZone.new(zone: BasePart)
@@ -49,7 +52,8 @@ function OpenZone.new(zone: BasePart)
 			PlayersInside = {};
 			Objects = {};
 			set = false;
-			level = 0;    
+			level = 0;
+			LastTouch = {};
 		}, OpenZone)
 		OpenZone.Zones[BillboardsFolder.Name] = _zone
 		
@@ -65,37 +69,41 @@ end
 
 function OpenZone:connectEnterEvent(binded_enter_event, binded_leave_event)
 	local region = Region3.new(
-		Vector3.new(self._x - self._sizeX / 2, self._y + self._sizeY / 2, self._z - self._sizeZ / 2),
-		Vector3.new(self._x + self._sizeX / 2, self._y + self._sizeY * 1.5, self._z + self._sizeZ / 2)
+		Vector3.new(self._x - self._sizeX / 2, self._y - self._sizeY / 2, self._z - self._sizeZ / 2),
+		Vector3.new(self._x + self._sizeX / 2, self._y + self._sizeY / 2, self._z + self._sizeZ / 2)
 	)
-
-	region = region:ExpandToGrid(9)
 
 	RunService.Heartbeat:Connect(function()
 		local partsInRegion = workspace:FindPartsInRegion3(region, nil, math.huge)
+		local playersInRegion = {}
 
 		for _, part in pairs(partsInRegion) do
 			local character = part.Parent
 			if character and character:IsA("Model") and character:FindFirstChild("Humanoid") then
 				local player = game.Players:GetPlayerFromCharacter(character)
 				if player then
-					table.insert(self.PlayersInside, player.Name)
+					
+					if not self.LastTouch[player] or self.LastTouch[player] + 0.5 < tick() then
+						self.LastTouch[player] = tick()
+					else
+						return false
+					end
+					
 					if not table.find(self.PlayersInside, player.Name) then
 						binded_enter_event:Fire(player)
-						print(player.Name.." entered")
 						table.insert(self.PlayersInside, player.Name)
 					end
+					table.insert(playersInRegion, player.Name)
 				end
 			end
 		end
 
 		for i = #self.PlayersInside, 1, -1 do
 			local playerName = self.PlayersInside[i]
-			if not table.find(self.PlayersInside, playerName) then
+			if not table.find(playersInRegion, playerName) then
 				local player = game.Players:FindFirstChild(playerName)
 				if player then
 					binded_leave_event:Fire(player)
-					print(playerName.." left")
 				end
 				table.remove(self.PlayersInside, i)
 			end
@@ -161,7 +169,6 @@ function OpenZone:Plant(dataset)
 		if not _obj:FindFirstChild('Planted') or stackable then
 			local size = object:GetExtentsSize()
 			local planted = Instance.new('ObjectValue')
-			RunService.Heartbeat:Wait()
 			object = object:Clone()
 			object.Parent = self.zoneplants
 
@@ -192,12 +199,13 @@ function OpenZone:RemoveFilling()
 	self.Objects = {};
 end
 
-function OpenZone:Generate(datatable:{size:Vector3, Part:BasePart?, GridParts: {Attributes: any?}})
+function OpenZone:Generate(datatable:{Size:Vector3, Part:BasePart?, GridParts: {Attributes: any?}})
+	assert(datatable, "No datatable")
+	assert(datatable.Size, "No size specified")
 	local Zone: Zone = self
-	local size: Vector3 = datatable.size
+	local size: Vector3 = datatable.Size
 	local Part
 	
-	assert(datatable.size, "Size needs to be specified")
 	if datatable.Part then
 		Part = datatable.Part
 		self.lastgenpart = datatable.Part
@@ -243,7 +251,6 @@ function OpenZone:Generate(datatable:{size:Vector3, Part:BasePart?, GridParts: {
 						end
 					end
 				end
-				RunService.Heartbeat:Wait()
 			end
 		end)
 
