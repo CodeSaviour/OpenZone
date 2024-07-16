@@ -1,109 +1,164 @@
-# OpenZoneFill
+# OpenZone
 
-OpenZoneFill is a Roblox module that allows you to manage and manipulate zones in your game. With this module, you can create, generate, and manage objects within a defined zone, making it easier to handle complex spatial data.
+## Overview
 
-## Table of Contents
-
-- [Installation](#installation)
-- [Usage](#usage)
-  - [Creating a New Zone](#creating-a-new-zone)
-  - [Generating the Zone](#generating-the-zone)
-  - [Planting Objects in the Zone](#planting-objects-in-the-zone)
-  - [Removing All Objects from the Zone](#removing-all-objects-from-the-zone)
-  - [Getting the Top Layer Coordinates](#getting-the-top-layer-coordinates)
-- [API Reference](#api-reference)
-  - [OpenZone.new](#openzonenew)
-  - [OpenZone:GetTopLayer](#openzonegettoplayer)
-  - [OpenZone:Plant](#openzoneplant)
-  - [OpenZone:RemoveFilling](#openzoneremovefilling)
-  - [OpenZone:Generate](#openzonegenerate)
-- [License](#license)
+OpenZone is a Roblox module designed to manage zones within a game environment. It supports functionalities such as player detection within zones, zone creation, object planting within zones, and more.
 
 ## Installation
 
-To use the OpenZoneFill module in your Roblox game, you can insert it as a ModuleScript in your game or require it from a GitHub repository.
+To install OpenZone, follow these steps:
+
+1. Download the `OpenZone` module.
+2. Insert the module into your Roblox project.
 
 ## Usage
 
-### Creating a New Zone
+### Creating a Zone
+
+To create a new zone, you need to call the `OpenZone.new` function and pass a `BasePart` that represents the zone. 
 
 ```lua
-local OpenZone = require(path_to_OpenZone_module)
-
-local someBasePart = -- your BasePart here
-local myZone = OpenZone.new(someBasePart)
+local zonePart = -- Your BasePart here
+local newZone = OpenZone.new(zonePart)
 ```
 
-### Generating the Zone
+### Player Detection
+
+The module can detect when players enter or leave the zone. Bind functions to these events to handle player entry and exit.
 
 ```lua
-myZone:Generate(10, nil) -- Generates a grid with part size of 10
+newZone.onPlayerEnter:Connect(function(player)
+    print(player.Name .. " has entered the zone")
+end)
+
+newZone.onPlayerLeave:Connect(function(player)
+    print(player.Name .. " has left the zone")
+end)
 ```
 
-### Planting Objects in the Zone
+### Getting Players Inside a Zone
+
+You can get a list of players currently inside a zone using the `GetPlayers` method.
 
 ```lua
-local someModel = -- your Model or BasePart here
-myZone:Plant(someModel, 5, 2) -- Plants 5 instances of `someModel` with an offset of 2
+local playersInside, count = newZone:GetPlayers()
+print("Players inside the zone:", playersInside)
+print("Number of players inside the zone:", count)
 ```
 
-### Removing All Objects from the Zone
+### Planting Objects in a Zone
+
+To plant objects within a zone, use the `Plant` method. The dataset should include the model to plant, the amount, whether it's stackable, and optional rotation offsets.
 
 ```lua
-myZone:RemoveFilling()
+local dataset = {
+    Model = -- Your model here,
+    Amount = 10,
+    Stackable = true,
+    MinRotationOffset = 0,
+    MaxRotationOffset = 360
+}
+newZone:Plant(dataset)
 ```
 
-### Getting the Top Layer Coordinates
+### Removing Plants
+
+To remove all plants from a zone, use the `RemovePlants` method.
 
 ```lua
-local maxX, maxY, maxZ = myZone:GetTopLayer()
+newZone:RemovePlants()
 ```
 
-## API Reference
+### Generating a Zone Grid
 
-### OpenZone.new
+To generate a grid within the zone, use the `Generate` method with the specified size and optional part and grid attributes.
+
+```lua
+local datatable = {
+    size = Vector3.new(10, 10, 10),
+    Part = -- Optional part,
+    GridParts = -- Optional grid attributes
+}
+local objects, gridSize = newZone:Generate(datatable)
+```
+
+### Destroying a Zone
+
+To destroy a zone and clean up its resources, use the `Destroy` method.
+
+```lua
+newZone:Destroy()
+```
+
+## API
+
+### `OpenZone.new(zone: BasePart)`
 
 Creates a new zone.
 
-#### Parameters
+### `OpenZone:GetPlayers()`
 
-- `zone` (BasePart): The base part defining the zone.
+Returns a list of players inside the zone and the count of players.
 
-#### Returns
+### `OpenZone:Plant(dataset)`
 
-- `Zone`: A new zone object.
+Plants objects within the zone based on the dataset provided.
 
-### OpenZone:GetTopLayer
+### `OpenZone:RemovePlants()`
 
-Gets the top layer coordinates of the zone.
+Removes all planted objects from the zone.
 
-#### Returns
+### `OpenZone:Generate(datatable)`
 
-- `number, number, number`: The maximum X, Y, and Z coordinates in the zone.
+Generates a grid within the zone.
 
-### OpenZone:Plant
+### `OpenZone:Destroy()`
 
-Plants objects within the zone.
+Destroys the zone and cleans up its resources.
 
-#### Parameters
+## Example
 
-- `object` (Model | BasePart): The object to be planted.
-- `amount` (number): The number of objects to plant.
-- `offset` (number, optional): The offset for the placement of objects.
+```lua
+local HttpService = game:GetService('HttpService')
+local RunService = game:GetService('RunService')
+local OpenZone = require(game.ServerScriptService.OpenZone)
 
-### OpenZone:RemoveFilling
+local zonePart = -- Your BasePart here
+local newZone = OpenZone.new(zonePart)
 
-Removes all objects from the zone.
+newZone.onPlayerEnter:Connect(function(player)
+    print(player.Name .. " has entered the zone")
+end)
 
-### OpenZone:Generate
+newZone.onPlayerLeave:Connect(function(player)
+    print(player.Name .. " has left the zone")
+end)
 
-Generates the zone with parts.
+local playersInside, count = newZone:GetPlayers()
+print("Players inside the zone:", playersInside)
+print("Number of players inside the zone:", count)
 
-#### Parameters
+local dataset = {
+    Model = -- Your model here,
+    Amount = 10,
+    Stackable = true,
+    MinRotationOffset = 0,
+    MaxRotationOffset = 360
+}
+newZone:Plant(dataset)
 
-- `size` (number): The size of each generated part.
-- `Part` (BasePart, optional): The template part to use for generation. If not provided, a new Part will be created.
+newZone:RemovePlants()
 
-#### Returns
+local datatable = {
+    size = Vector3.new(10, 10, 10),
+    Part = -- Optional part,
+    GridParts = -- Optional grid attributes
+}
+local objects, gridSize = newZone:Generate(datatable)
 
-- `table, Vector3`: A table of generated objects and their highest coordinates or `false` on failure.
+newZone:Destroy()
+```
+
+## License
+
+This project is licensed under the MIT License. See the `LICENSE` file for details.
